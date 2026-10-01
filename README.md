@@ -1,8 +1,14 @@
-# llmopt
+# Quantized LLM Inference Engine (`llmopt`)
 
 An LLM inference optimization engine in pure PyTorch: weight quantization, a
 paged KV cache, continuous batching, prefix caching, and an OpenAI-compatible
 HTTP surface — with no compiled extensions required.
+
+> **CPU note.** Quantized weights are stored packed but dequantized to float for
+> each matmul, so there is no int4/int8 GEMM kernel. On CPU this saves memory
+> rather than time, and quantized layers are somewhat slower than plain
+> `nn.Linear`. The throughput wins come from continuous batching, the paged KV
+> cache, and prefix caching. See [Performance notes](#performance-notes).
 
 ```
 pip install -e .          # core
@@ -92,6 +98,23 @@ pytest                    # correctness, paged attention, cache refcounts, servi
 ruff check . && mypy      # lint and types
 ```
 
+## Performance notes
+
+Quantization here is a **storage** optimisation, not a compute one.
+`QuantLinear.forward` unpacks the codes and dequantizes to `compute_dtype`
+before calling `F.linear`, so the matmul itself stays in floating point.
+
+| | Effect |
+| --- | --- |
+| Memory footprint | Real win. 4-bit weights hold `bits` per weight at rest |
+| Single-request latency | No win, and a small loss from dequantization overhead |
+| Concurrent throughput | Real win, from batching plus paged allocation and prefix reuse |
+
+If you are serving on CPU, leave the model in `float32` and lean on
+`llmopt bench --shared-prefix` to measure the prefix cache. If you need CPU
+speed at low bit-width, use a runtime with fused kernels (`llama.cpp`/GGUF,
+`torchao`, or `bitsandbytes`) rather than this path.
+
 ## License
 
-Apache-2.0.
+Apache-2.0. See [LICENSE](LICENSE).

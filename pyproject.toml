@@ -53,9 +53,9 @@ llmopt = "llmopt.cli:main"
 llmopt-serve = "llmopt.serving.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/Harishwa77/llm-inference-optimization-engine"
-Repository = "https://github.com/Harishwa77/llm-inference-optimization-engine"
-Issues = "https://github.com/Harishwa77/llm-inference-optimization-engine/issues"
+Homepage = "https://github.com/Harishwa77/Quantized-LLM-Inference-Engine"
+Repository = "https://github.com/Harishwa77/Quantized-LLM-Inference-Engine"
+Issues = "https://github.com/Harishwa77/Quantized-LLM-Inference-Engine/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/llmopt"]
