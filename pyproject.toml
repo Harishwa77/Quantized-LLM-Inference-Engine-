@@ -1,0 +1,100 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llmopt"
+version = "0.1.0"
+description = "An LLM inference optimization engine: quantization, paged KV-cache attention, continuous batching, and prefix caching."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Harishwa77" }]
+keywords = ["llm", "inference", "quantization", "kv-cache", "scheduling", "paged-attention"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "torch>=2.1",
+]
+
+[project.optional-dependencies]
+fastapi = ["fastapi>=0.110", "uvicorn>=0.27", "pydantic>=2.5"]
+hf = ["transformers>=4.40", "tokenizers>=0.19"]
+flash = ["flash-attn>=2.5"]
+vllm = ["vllm>=0.4"]
+serve = ["uvicorn>=0.27"]
+bench = ["rich>=13.0"]
+dev = [
+  "pytest>=8.0",
+  "pytest-cov>=4.1",
+  "ruff>=0.4",
+  "mypy>=1.9",
+]
+all = [
+  "fastapi>=0.110",
+  "uvicorn>=0.27",
+  "pydantic>=2.5",
+  "transformers>=4.40",
+  "rich>=13.0",
+  "ruff>=0.4",
+  "mypy>=1.9",
+  "pytest>=8.0",
+]
+
+[project.scripts]
+llmopt = "llmopt.cli:main"
+llmopt-serve = "llmopt.serving.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/Harishwa77/llm-inference-optimization-engine"
+Repository = "https://github.com/Harishwa77/llm-inference-optimization-engine"
+Issues = "https://github.com/Harishwa77/llm-inference-optimization-engine/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/llmopt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = [
+  "slow: long running tests",
+  "cuda: requires a CUDA device",
+]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "RUF", "ANN"]
+ignore = ["ANN401", "RUF001", "RUF002", "RUF003", "B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ANN", "S101"]
+
+[tool.ruff.lint.flake8-type-checking]
+strict = true
+
+[tool.mypy]
+python_version = "3.10"
+files = ["src/llmopt"]
+ignore_missing_imports = true
+warn_unused_ignores = false
+disallow_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+[[tool.mypy.overrides]]
+module = ["llmopt.serving.fastapi_app"]
+disallow_untyped_defs = false
+
+[tool.coverage.run]
+source = ["src/llmopt"]
